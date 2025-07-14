@@ -1,92 +1,198 @@
-const bullshitKeywords = [
-  // Jargon corporate
-  "synergie", "leadership", "disruptif", "disruption", "résilience", "inspirant", "inspiration",
-  "empowerment", "alignement", "vision", "visionnaire", "agilité", "pivot", "transversalité",
-  "collaboratif", "innovation", "transformant", "transformation", "digitalisation",
-  "réinvention", "proactivité", "scalabilité", "éthique", "valeurs", "cohérence", "bienveillance",
-  "intelligence collective", "co-construction", "brainstorming", "talents", "agile", "flexibilité",
-  "ambition partagée", "accélération", "leadership éclairé", "cheminement", "roadmap",
-  "stratégie gagnante", "écosystème", "multidisciplinaire", "pensée design", "intelligence émotionnelle",
-  "soft skills", "hard skills", "compétences clés", "expérience utilisateur", "UX", "UI",
-  "créateur de valeur", "création de valeur", "capital humain", "leviers", "empowerer",
+// Fonction pour calculer le score de bullshit
+function calculateBullshitScore(text) {
+    let score = 0;
+    const bullshitKeywords = [
+        "synergie", "catalyseur", "optimiser", "écosystème", "innovation disruptive",
+        "valeur ajoutée", "transformation digitale", "monétiser", "roadmap",
+        "paradigm shift", "best practices", "quick win", "low hanging fruit",
+        "alignement", "scalabilité", "solution orientée client", "proactif",
+        "holistique", "challenge", "opportunité", "croissance exponentielle",
+        "leadership éclairé", "pensée latérale", "core business", "business review",
+        "agile", "framework", "méthodologie", "co-création", "empowerment",
+        "engager", "insight", "pivot", "visionnaire", "win-win",
+        "transformation mindset", "co-construction", "solutionner", "créer du lien",
+        "gamification", "growth hacking", "storytelling", "mindfulness",
+        "wellness", "intrapreneurship", "reskilling", "upskilling", "désintermédiation"
+    ];
 
-  // Auto-glorification
-  "tellement fier", "honoré", "reconnaissant", "gratitude", "privilégié", "humbled",
-  "merci la vie", "une chance incroyable", "magnifique aventure", "challenge relevé",
-  "parcours exceptionnel", "fierté", "chemin parcouru", "belle réussite", "détermination",
-  "passionné", "passionnante aventure", "parcours inspirant", "mon why", "authenticité",
-  "croyance profonde", "succès collectif", "apprentissage permanent",
+    const buzzwordRegex = new RegExp(bullshitKeywords.join("|"), "gi");
+    const matches = text.match(buzzwordRegex);
+    if (matches) {
+        score += matches.length * 10; // Chaque mot clé ajoute 10 points
+    }
 
-  // Jargon RH / startup
-  "onboarding", "offboarding", "feedback constructif", "people centric", "recrutement ciblé",
-  "management bienveillant", "team building", "culture d’entreprise", "talents d’exception",
-  "skills", "lead", "recrutement stratégique", "attractivité", "engagement collaborateur",
+    // Règles basées sur la longueur du post (les posts très longs ou très courts peuvent être suspects)
+    if (text.length < 50 || text.length > 1000) {
+        score += 5;
+    }
 
-  // Marketing creux
-  "stratégie digitale", "brand content", "influence", "performance", "levier de croissance",
-  "lead nurturing", "conversion", "omnicanal", "multicanal", "branding", "référencement",
-  "stratégie omnicanale", "enjeux business", "marché en mutation", "customer centric",
+    // Vérifier l'utilisation excessive d'emojis (indicateur de "feel-good" bullshit)
+    const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
+    const emojiMatches = text.match(emojiRegex);
+    if (emojiMatches && emojiMatches.length > 5) { // Plus de 5 emojis
+        score += emojiMatches.length * 2;
+    }
 
-  // Grandiloquence & vide
-  "changer le monde", "faire la différence", "ensemble on va plus loin", "donner du sens",
-  "créer du lien", "avoir de l’impact", "montrer la voie", "penser autrement",
-  "sortir du cadre", "oser rêver", "révéler le potentiel", "grandir ensemble", "repousser les limites",
+    // Répétition de mots ou phrases simples (peut indiquer un contenu creux)
+    const words = text.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+    const wordCounts = {};
+    words.forEach(word => {
+        wordCounts[word] = (wordCounts[word] || 0) + 1;
+    });
+    for (const word in wordCounts) {
+        if (wordCounts[word] > 3) { // Si un mot est répété plus de 3 fois
+            score += (wordCounts[word] - 3) * 5;
+        }
+    }
 
-    // Anglais
-  "resilience", "empower", "visionary", "growth", "mindset", "value-driven",
-  "disruptive", "innovative", "impactful", "mission-driven", "authenticity", "diversity",
-  "leadership", "entrepreneurial", "scalable", "transformative", "collaboration",
-  "inspiration", "purpose", "ecosystem", "strategy", "networking", "branding",
-  "game changer", "thought leader", "personal branding", "team player", "goals",
-  "career path", "journey", "trusted advisor", "business partner"
-];
+    // Détection de phrases génériques ou "creuses"
+    const genericPhrases = [
+        "hâte de voir vos commentaires", "qu'en pensez-vous", "n'hésitez pas à partager",
+        "je suis ravi de partager", "une pensée pour", "un grand merci à",
+        "continuons la conversation", "ensemble nous pouvons", "découvrez comment"
+    ];
+    const genericRegex = new RegExp(genericPhrases.join("|"), "gi");
+    const genericMatches = text.match(genericRegex);
+    if (genericMatches) {
+        score += genericMatches.length * 7; // Chaque phrase générique ajoute 7 points
+    }
 
-function computeBullshitScore(text) {
-  let score = 0;
-  const lower = text.toLowerCase();
-
-  bullshitKeywords.forEach(word => {
-    if (lower.includes(word)) score += 5;
-  });
-
-  const emojis = (text.match(/[\u{1F600}-\u{1F64F}]/gu) || []).length;
-  score += emojis * 2;
-
-  if (text.length > 500) score += 5;
-  if (text.split(" ").length > 100) score += 3;
-
-  return score;
+    return Math.min(100, score); // Le score ne dépasse pas 100
 }
 
-function getColor(score) {
-  if (score < 10) return "#ccffcc";    // vert
-  if (score < 20) return "#fff2b2";    // jaune
-  return "#ffcccc";                    // rouge
+// Fonction pour déterminer la couleur et le message du score
+function getScoreInfo(score) {
+    let color;
+    let message;
+
+    if (score < 30) {
+        color = '#4CAF50'; // Vert (peu de bullshit)
+        message = 'Bullshit Score: Low';
+    } else if (score < 60) {
+        color = '#FFC107'; // Orange (moyen)
+        message = 'Bullshit Score: Medium'
+    } else {
+        color = '#F44336'; // Rouge (beaucoup de bullshit)
+        message = 'Bullshit Score: HIGH! 🚩'; // Ajout d'un drapeau pour souligner
+    }
+    return { color, message };
 }
 
-function replaceHeaderWithScore(post, score) {
-  // Sélectionne la zone de header auteur/date
-  const header = post.querySelector('[class*="update-components-header"]');
-  if (!header || header.querySelector('.bullshit-header')) return;
+// Fonction pour traiter un post et ajouter le score
+function processPost(postElement) {
+    // Utiliser un attribut pour marquer les posts traités et éviter les doublons
+    if (postElement.dataset.bullshitProcessed) {
+        return;
+    }
 
-  // Vide son contenu
-  header.innerHTML = '';
+    let postText = '';
+    // Cibler le contenu principal du post (peut varier selon les mises à jour de LinkedIn)
+    // On cherche un élément de texte large dans le post
+    const textElement = postElement.querySelector('div.feed-shared-update-v2__description-wrapper, span.break-words, div.feed-shared-text');
 
-  // Ajoute le bullshit score à la place
-  const div = document.createElement('div');
-  div.className = 'bullshit-header';
-  div.innerText = `Bullshit Score: ${score}`;
-  div.style.backgroundColor = getColor(score);
+    if (textElement) {
+        postText = textElement.innerText;
+    } else {
+        // Fallback pour les commentaires ou d'autres formats de contenu
+        const commentTextElement = postElement.querySelector('div.comments-view__comment-item-content, div.comment-item__content');
+        if (commentTextElement) {
+            postText = commentTextElement.innerText;
+        }
+    }
 
-  header.appendChild(div);
+    if (postText.trim() === '') {
+        // Si le post n'a pas de texte significatif (ex: juste une image/vidéo sans description), on ne l'évalue pas.
+        return;
+    }
+
+    const score = calculateBullshitScore(postText);
+    const { color, message } = getScoreInfo(score);
+
+    const scoreDisplay = document.createElement('div');
+    scoreDisplay.classList.add('bullshit-score-display');
+    scoreDisplay.style.cssText = `
+        background-color: ${color};
+        color: white;
+        padding: 4px 8px;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: bold;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 10px; /* Ajout d'une marge pour l'espacement */
+        flex-shrink: 0; /* Empêche le score d'être réduit si l'espace est limité */
+    `;
+    scoreDisplay.innerText = `${message} (${score}/100)`;
+
+    // Trouver l'emplacement cible pour insérer le score
+    // On recherche le conteneur des actions sociales qui est souvent stable
+    let insertPoint = postElement.querySelector('.feed-shared-social-actions, .comments-view__comment-action-bar');
+
+    // Cibler spécifiquement le bouton d'identité comme vous l'avez demandé
+    const identityButton = postElement.querySelector('.social-actions-button.content-admin-identity-toggle-button');
+
+    if (identityButton) {
+        // Insérer juste après le bouton d'identité
+        if (!identityButton.nextElementSibling?.classList.contains('bullshit-score-display')) {
+            identityButton.parentNode.insertBefore(scoreDisplay, identityButton.nextSibling);
+            postElement.dataset.bullshitProcessed = true;
+        }
+    } else if (insertPoint) {
+        // Fallback: si le bouton d'identité n'est pas trouvé, insérer au début de la barre d'actions sociales
+        if (!insertPoint.querySelector('.bullshit-score-display')) {
+            insertPoint.prepend(scoreDisplay);
+            postElement.dataset.bullshitProcessed = true;
+        }
+    } else {
+        // Dernier recours: si aucune des cibles n'est trouvée, chercher un endroit dans l'en-tête du post
+        const headerElement = postElement.querySelector('.feed-shared-actor__meta, .comments-view__comment-meta');
+        if (headerElement && !headerElement.querySelector('.bullshit-score-display')) {
+            headerElement.appendChild(scoreDisplay);
+            postElement.dataset.bullshitProcessed = true;
+        }
+    }
 }
 
-function analyzePosts() {
-  const posts = document.querySelectorAll('div.feed-shared-update-v2');
-  posts.forEach(post => {
-    const score = computeBullshitScore(post.innerText);
-    replaceHeaderWithScore(post, score);
-  });
+// Fonction pour observer les changements dans le DOM et détecter de nouveaux posts
+function observePosts() {
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(node => {
+                    // Vérifier si le nœud ajouté est un post principal ou un commentaire
+                    if (node.nodeType === 1) { // S'assurer que c'est un élément HTML
+                        // Sélecteurs plus robustes pour les posts principaux
+                        if (node.matches('div[data-urn*="urn:li:activity"], article.feed-shared-update-v2')) {
+                            processPost(node);
+                        }
+                        // Sélecteurs pour les commentaires ou réponses
+                        if (node.matches('div.comments-view__comment-item, li.comment-item')) {
+                            processPost(node);
+                        }
+                        // Pour les cas où les éléments de post sont ajoutés comme enfants dans une zone plus grande (ex: défilement)
+                        const newPosts = node.querySelectorAll('div[data-urn*="urn:li:activity"], article.feed-shared-update-v2, div.comments-view__comment-item, li.comment-item');
+                        newPosts.forEach(post => processPost(post));
+                    }
+                });
+            }
+        });
+    });
+
+    // Cible le flux d'actualités principal de LinkedIn et d'autres zones où les posts/commentaires peuvent apparaître
+    // On observe un élément parent large et stable pour capturer les ajouts
+    const feedContainer = document.querySelector('.scaffold-layout__main, main[role="main"]');
+    if (feedContainer) {
+        observer.observe(feedContainer, { childList: true, subtree: true });
+        console.log("MutationObserver initialisé sur le conteneur du fil d'actualité.");
+    } else {
+        console.warn("Conteneur du fil d'actualité LinkedIn introuvable. Le détecteur de bullshit pourrait ne pas fonctionner sur toutes les pages.");
+        // Fallback: observer le corps du document si le conteneur spécifique n'est pas trouvé
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
 }
 
-setInterval(analyzePosts, 2000);
+// Lancer le traitement des posts déjà présents lors du chargement initial
+document.querySelectorAll('div[data-urn*="urn:li:activity"], article.feed-shared-update-v2, div.comments-view__comment-item, li.comment-item').forEach(post => processPost(post));
+
+// Lancer l'observation pour les posts qui se chargent dynamiquement
+observePosts();
