@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "LinkedIn Bullshit Detector",
-    "version": "1.0",
+    "version": "1.1",
     "description": "Affiche un score de 'bullshit' avec un code couleur sur les posts LinkedIn directement dans le fil d'actualité.",
     "permissions": [
         "storage"
